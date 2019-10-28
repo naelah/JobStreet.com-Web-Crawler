@@ -14,6 +14,7 @@ run the following command in terminal
 
 	pip install pandas
 
+BeautifulSoup is outdated, follow instructions in console
 
 ### Run the crawler
 
