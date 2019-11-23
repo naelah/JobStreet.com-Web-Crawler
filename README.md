@@ -10,7 +10,7 @@ run the following command in terminal
 
 	pip install requests
 
-	pip install BeautifulSoup
+	pip install beautifulSoup4
 
 	pip install pandas
 
