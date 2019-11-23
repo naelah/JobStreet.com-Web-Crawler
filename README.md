@@ -9,7 +9,9 @@ Before running the script, please install **requests**, **BeautifulSoup** and **
 run the following command in terminal
 
 	pip install requests
-
+	
+	pip install requests
+	
 	pip install beautifulSoup4
 
 	pip install pandas
