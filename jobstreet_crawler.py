@@ -1,12 +1,14 @@
 import requests # for web requests
 from bs4 import BeautifulSoup # a powerful HTML parser
+from selenium.webdriver import Chrome
 import pandas as pd # for .csv file read and write
+import re # for regular regression handling
 from requests_html import HTMLSession
 session = HTMLSession()
-import re # for regular regression handling
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'}
-
+path = r"C:/Users/BigDataLab/Downloads/JobStreet.com-Web-Crawler-master/chromedriver.exe"
+driver = Chrome(path)
 
 """ get all position <a> tags for the list of job roles, results stored in a dictionary
 <a> tag example:
@@ -45,7 +47,7 @@ def linksByKey(key):
     while loaded:
         print('Loading page {} ...'.format(pn))
         pay_load['pg'] = pn
-        r = session.get(base_url, headers=headers, params=pay_load)
+        r = requests.get(base_url, headers=headers, params=pay_load)
 
         # extract position <a> tags
         soup = BeautifulSoup(r.text,'html.parser')
@@ -94,6 +96,8 @@ def parseLink(link):
 	job_id = link['data-job-id'].strip()
 	# job title
 	job_title = link['data-job-title'].strip()
+	# job industry
+	job_title = link['data-job-title'].strip()
 	# posted country
 	country = link['data-posting-country'].strip()
 	# the web address towards to the post detail page
@@ -109,28 +113,41 @@ def getJobDetail(job_href):
     ## retun: post details from the detail page
 
     print('Scraping ',job_href,'...')
-    r = session.get(job_href)
-    soup = BeautifulSoup(r.text,'html.parser')
+    driver.get(job_href)
+    company_name = driver.find_element_by_id('company_name').text if driver.find_element_by_id('company_name').text else None
+    years_of_experience = driver.find_element_by_id('years_of_experience').text if driver.find_element_by_id('years_of_experience').text else None
+    company_location =  driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
+    company_industry = driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
+    job_location = driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
+    company_size = driver.find_element_by_id('company_size').text if driver.find_element_by_id('company_size').text else None
+    job_description = driver.find_element_by_id('job_description').text if driver.find_element_by_id('job_description').text else None
+	
+	
+    #r = requests.get(job_href)
+    #soup = BeautifulSoup(r.text,'html.parser')
     # company who posts the position, very often is a recuriter company
-    company_name = soup.find('div',{'id':'company_name'}).text.strip()  if soup.find('div',{'id':'company_name'}) else None
+    #company_name = soup.find('div',{'id':'company_name'}).get_text() if soup.find('div',{'id':'company_name'}) else None
+	# company_name = soup.find('div',{'id':'company_name'}).text.strip()
     # years of working experience required
-    years_of_experience= soup.find('span',{'id':'years_of_experience'}).text.strip()  if soup.find('span',{'id':'years_of_experience'}) else None
+    #years_of_experience = soup.find('span',{'id':'years_of_experience'}).text
+    #print(years_of_experience)
+    #years_of_experience.strip()# if soup.find('span',{'id':'years_of_experience'}) else None
     # location of the company
-    company_location = soup.find('span',{'id':'single_work_location'}).text.strip()  if soup.find('span',{'id':'single_work_location'}) else None
+    #company_location = soup.find('span',{'id':'single_work_location'}).text.strip() if soup.find('span',{'id':'single_work_location'}) else None
     # industry of the company who posts the position, very often is a recuriter company
-    company_industry = soup.find('p',{'id':'company_industry'}).text.strip() if soup.find('p',{'id':'company_industry'}) else None
+    #company_industry = soup.find('p',{'id':'company_industry'}).text.strip() if soup.find('p',{'id':'company_industry'}) else None
     # size of the company who posts the position
-    company_size = soup.find('p',{'id':'company_size'}).text.strip() if soup.find('p',{'id':'company_size'}) else None
+    #company_size = soup.find('p',{'id':'company_size'}).text.strip() if soup.find('p',{'id':'company_size'}) else None
     # working location
-    job_location = soup.find('p',{'id':'address'}).text.strip() if soup.find('p',{'id':'address'}) else None
+    #job_location = soup.find('p',{'id':'address'}).text.strip() if soup.find('p',{'id':'address'}) else None
     # job description, which contains information about job scope, requirements and sometimes a brief introduction about the comapny
-    job_description = soup.find('div',{'id':'job_description'}).text.strip() if soup.find('div',{'id':'job_description'}) else None
+    #job_description = soup.find('div',{'id':'job_description'}).text.strip() if soup.find('div',{'id':'job_description'}) else None
     return [company_name,company_location,company_industry,company_size,years_of_experience,job_location,job_description]
 
 def main():
 
     # a list of job roles to be crawled
-    key_words = ['data scientist']
+    key_words = ['doctor']
     s = requests.session()
     links_dic = linksByKeys(key_words)
     parseLinks(links_dic)
