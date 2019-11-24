@@ -9,6 +9,7 @@ session = HTMLSession()
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'}
 path = r"C:/Users/BigDataLab/Downloads/JobStreet.com-Web-Crawler-master/chromedriver.exe"
 driver = Chrome(path)
+driver.implicitly_wait(5)
 
 """ get all position <a> tags for the list of job roles, results stored in a dictionary
 <a> tag example:
@@ -80,7 +81,7 @@ def parseLinks(links_dic):
         result = pd.DataFrame(jobs,columns=['key_word','job_id','job_title','country','job_link','company','company_region','company_industry','company_size','experence_requirement','working_location','description'])
 
         # add a column denoting if the position is posted by a recuriter company
-        result['postedByHR'] = result.company_industry.apply(lambda x:True if x and x.find('Human Resources')>-1 else False)
+        result['postedByHR'] = True #result.company_industry.apply(lambda x:True if x and x.find('Human Resources')>-1 else False)
 
         # save result,
         file_name = key+'.csv'
@@ -114,40 +115,41 @@ def getJobDetail(job_href):
 
     print('Scraping ',job_href,'...')
     driver.get(job_href)
-    company_name = driver.find_element_by_id('company_name').text if driver.find_element_by_id('company_name').text else None
-    years_of_experience = driver.find_element_by_id('years_of_experience').text if driver.find_element_by_id('years_of_experience').text else None
-    company_location =  driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
-    company_industry = driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
-    job_location = driver.find_element_by_id('company_industry').text if driver.find_element_by_id('company_industry').text else None
-    company_size = driver.find_element_by_id('company_size').text if driver.find_element_by_id('company_size').text else None
-    job_description = driver.find_element_by_id('job_description').text if driver.find_element_by_id('job_description').text else None
 	
-	
-    #r = requests.get(job_href)
-    #soup = BeautifulSoup(r.text,'html.parser')
-    # company who posts the position, very often is a recuriter company
-    #company_name = soup.find('div',{'id':'company_name'}).get_text() if soup.find('div',{'id':'company_name'}) else None
-	# company_name = soup.find('div',{'id':'company_name'}).text.strip()
-    # years of working experience required
-    #years_of_experience = soup.find('span',{'id':'years_of_experience'}).text
-    #print(years_of_experience)
-    #years_of_experience.strip()# if soup.find('span',{'id':'years_of_experience'}) else None
-    # location of the company
-    #company_location = soup.find('span',{'id':'single_work_location'}).text.strip() if soup.find('span',{'id':'single_work_location'}) else None
-    # industry of the company who posts the position, very often is a recuriter company
-    #company_industry = soup.find('p',{'id':'company_industry'}).text.strip() if soup.find('p',{'id':'company_industry'}) else None
-    # size of the company who posts the position
-    #company_size = soup.find('p',{'id':'company_size'}).text.strip() if soup.find('p',{'id':'company_size'}) else None
-    # working location
-    #job_location = soup.find('p',{'id':'address'}).text.strip() if soup.find('p',{'id':'address'}) else None
-    # job description, which contains information about job scope, requirements and sometimes a brief introduction about the comapny
-    #job_description = soup.find('div',{'id':'job_description'}).text.strip() if soup.find('div',{'id':'job_description'}) else None
-    return [company_name,company_location,company_industry,company_size,years_of_experience,job_location,job_description]
+    try:
+        company_name=driver.find_element_by_id("company_name").text
+    except:
+        company_name = None
+    try:
+        years_of_experience=driver.find_element_by_id("years_of_experience").text
+    except:
+        years_of_experience = None
+    try:
+        company_location=driver.find_element_by_id("single_work_location").text
+    except:
+        company_location = None
+    try:
+        company_industry=driver.find_element_by_id("company_industry").text
+    except:
+        company_industry = None
+    try:
+        job_location=driver.find_element_by_id("job").text
+    except:
+        job_location = None
+    try:
+        company_size=driver.find_element_by_id("company_size").text
+    except:
+        company_size = None
+    try:
+        job_description=driver.find_element_by_id("job_description").text
+    except:
+        job_description = None
+     return [company_name,company_location,company_industry,company_size,years_of_experience,job_location,job_description]
 
 def main():
 
     # a list of job roles to be crawled
-    key_words = ['doctor']
+    key_words = ['biotech']
     s = requests.session()
     links_dic = linksByKeys(key_words)
     parseLinks(links_dic)
