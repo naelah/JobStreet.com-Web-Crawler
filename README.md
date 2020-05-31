@@ -10,7 +10,7 @@ run the following command in terminal
 
 	pip install requests
 	
-	pip install requests
+	pip install selenium
 	
 	pip install beautifulSoup4
 
