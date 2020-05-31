@@ -7,9 +7,9 @@ from requests_html import HTMLSession
 session = HTMLSession()
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'}
-path = r"C:/Users/BigDataLab/Downloads/JobStreet.com-Web-Crawler-master/chromedriver.exe"
+path = r"C:/Users/naela/AppData/Local/Programs/Python/chromedriver.exe"
 driver = Chrome(path)
-driver.implicitly_wait(5)
+driver.implicitly_wait(2)
 
 """ get all position <a> tags for the list of job roles, results stored in a dictionary
 <a> tag example:
@@ -78,7 +78,7 @@ def parseLinks(links_dic):
             jobs.append([key] + parseLink(link))
 
         # transfrom the result to a pandas.DataFrame
-        result = pd.DataFrame(jobs,columns=['key_word','job_id','job_title','country','job_link','company','company_region','company_industry','company_size','experence_requirement','working_location','description'])
+        result = pd.DataFrame(jobs,columns=['key_word','job_id','job_title','country','job_link','company','company_region','company_industry','company_size','experience_requirement','working_location','salary','description'])
 
         # add a column denoting if the position is posted by a recuriter company
         result['postedByHR'] = True #result.company_industry.apply(lambda x:True if x and x.find('Human Resources')>-1 else False)
@@ -96,8 +96,6 @@ def parseLink(link):
 	# unique id assigned to a position
 	job_id = link['data-job-id'].strip()
 	# job title
-	job_title = link['data-job-title'].strip()
-	# job industry
 	job_title = link['data-job-title'].strip()
 	# posted country
 	country = link['data-posting-country'].strip()
@@ -133,7 +131,7 @@ def getJobDetail(job_href):
     except:
         company_industry = None
     try:
-        job_location=driver.find_element_by_id("job").text
+        job_location=driver.find_element_by_id("address").text
     except:
         job_location = None
     try:
@@ -141,15 +139,19 @@ def getJobDetail(job_href):
     except:
         company_size = None
     try:
+        salary=driver.find_element_by_id("salary_range").text
+    except:
+        salary = None
+    try:
         job_description=driver.find_element_by_id("job_description").text
     except:
         job_description = None
-     return [company_name,company_location,company_industry,company_size,years_of_experience,job_location,job_description]
+    return [company_name,company_location,company_industry,company_size,years_of_experience,job_location,salary,job_description]
 
 def main():
 
     # a list of job roles to be crawled
-    key_words = ['biotech']
+    key_words = ['crop']
     s = requests.session()
     links_dic = linksByKeys(key_words)
     parseLinks(links_dic)
